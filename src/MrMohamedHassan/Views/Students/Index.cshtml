@@ -1,0 +1,134 @@
+@model List<MrMohamedHassan.ViewModels.StudentListViewModel>
+@{
+    ViewData["Title"] = "الطلاب";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">الطلاب</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus ms-2"></i>إضافة طالب</a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="name" value="@ViewBag.Name" class="form-control" placeholder="بحث بالاسم..." />
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="code" value="@ViewBag.Code" class="form-control" placeholder="كود الطالب" />
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">جميع الحالات</option>
+                    <option value="Active">نشط</option>
+                    <option value="Inactive">غير نشط</option>
+                    <option value="Withdrawn">منسحب</option>
+                    <option value="Graduated">متخرج</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search ms-2"></i>بحث</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="Index" class="btn btn-outline-secondary w-100"><i class="fas fa-redo ms-2"></i>إعادة تعيين</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>الطالب</th>
+                    <th>الكود</th>
+                    <th>الهاتف</th>
+                    <th>ولي الأمر</th>
+                    <th>المدرسة</th>
+                    <th>المرحلة</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الالتحاق</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if (!string.IsNullOrEmpty(student.ImageUrl))
+                                {
+                                    <img src="@student.ImageUrl" class="avatar avatar-sm me-2" alt="" />
+                                }
+                                else
+                                {
+                                    <div class="avatar avatar-sm bg-primary-l text-primary me-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                }
+                                <span class="fw-bold">@student.FullName</span>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-azure-lt">@student.StudentCode</span></td>
+                        <td>@student.Phone</td>
+                        <td>@student.ParentName</td>
+                        <td>@student.School</td>
+                        <td>@student.Grade</td>
+                        <td>
+                            @switch (student.Status)
+                            {
+                                case MrMohamedHassan.Models.StudentStatus.Active:
+                                    <span class="badge bg-success-lt">نشط</span>
+                                    break;
+                                case MrMohamedHassan.Models.StudentStatus.Inactive:
+                                    <span class="badge bg-warning-lt">غير نشط</span>
+                                    break;
+                                case MrMohamedHassan.Models.StudentStatus.Withdrawn:
+                                    <span class="badge bg-danger-lt">منسحب</span>
+                                    break;
+                                case MrMohamedHassan.Models.StudentStatus.Graduated:
+                                    <span class="badge bg-info-lt">متخرج</span>
+                                    break;
+                            }
+                        </td>
+                        <td>@student.JoinDate.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-ghost-secondary btn-icon btn-sm" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-action="Details" asp-route-id="@student.Id"><i class="fas fa-eye ms-2"></i>عرض</a>
+                                    <a class="dropdown-item" asp-action="Edit" asp-route-id="@student.Id"><i class="fas fa-edit ms-2"></i>تعديل</a>
+                                    <a class="dropdown-item" asp-action="QrCode" asp-route-id="@student.Id"><i class="fas fa-qrcode ms-2"></i>QR Code</a>
+                                    <a class="dropdown-item" asp-action="PaymentHistory" asp-route-id="@student.Id"><i class="fas fa-money ms-2"></i>المدفوعات</a>
+                                    <a class="dropdown-item" asp-action="AttendanceHistory" asp-route-id="@student.Id"><i class="fas fa-clipboard ms-2"></i>الحضور</a>
+                                    <hr class="dropdown-divider" />
+                                    <form asp-action="Delete" asp-route-id="@student.Id" method="post">
+                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')"><i class="fas fa-trash ms-2"></i>حذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if ((int)ViewBag.TotalPages > 1)
+{
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.Page ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-name="@ViewBag.Name" asp-route-code="@ViewBag.Code">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

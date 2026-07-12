@@ -1,0 +1,14 @@
+<header style="background:#fff;border-bottom:1px solid var(--border-color);padding:0 1.5rem;height:var(--header-height);display:flex;align-items:center;justify-content:space-between;">
+    <h4 style="margin:0;font-weight:800;font-size:1rem;color:var(--text-primary);">@ViewData["Title"]</h4>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="far fa-calendar ms-1"></i>
+            @DateTime.Now.ToString("dddd، dd MMMM yyyy", new System.Globalization.CultureInfo("ar-SA"))
+        </span>
+        <div style="width:1px;height:20px;background:var(--border-color);"></div>
+        <a asp-controller="Notifications" asp-action="Index" style="color:var(--text-secondary);font-size:1rem;position:relative;">
+            <i class="fas fa-bell"></i>
+            <span style="position:absolute;top:-4px;right:-6px;background:var(--danger);color:#fff;font-size:0.6rem;padding:2px 5px;border-radius:10px;">0</span>
+        </a>
+    </div>
+</header>

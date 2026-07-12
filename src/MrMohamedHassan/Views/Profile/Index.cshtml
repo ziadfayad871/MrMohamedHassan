@@ -1,0 +1,60 @@
+@model MrMohamedHassan.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "الملف الشخصي";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-user-circle ms-2"></i>الملف الشخصي</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Profile" asp-action="Update" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ProfileImageUrl" />
+                    <div class="text-center mb-4">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                        {
+                            <img src="@Model.ProfileImageUrl" alt="صورة الملف الشخصي" class="avatar avatar-xl" />
+                        }
+                        else
+                        {
+                            <div class="avatar avatar-xl bg-primary-l text-primary">
+                                <i class="fas fa-user" style="font-size:2rem"></i>
+                            </div>
+                        }
+                        <div class="mt-2">
+                            <input type="file" asp-for="ProfileImage" class="form-control" accept="image/*" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="JobTitle" class="form-label"></label>
+                            <input asp-for="JobTitle" class="form-control" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save ms-2"></i>حفظ التغييرات
+                    </button>
+                    <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-secondary">
+                        <i class="fas fa-lock ms-2"></i>تغيير كلمة المرور
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

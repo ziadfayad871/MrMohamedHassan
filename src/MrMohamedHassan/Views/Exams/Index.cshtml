@@ -1,0 +1,31 @@
+@model List<MrMohamedHassan.ViewModels.ExamListViewModel>
+@{ ViewData["Title"] = "الامتحانات"; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">الامتحانات</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus ms-2"></i>إنشاء امتحان</a>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-vcenter card-table">
+            <thead><tr><th>اسم الامتحان</th><th>المجموعة</th><th>التاريخ</th><th>الدرجة</th><th>النتيجة</th><th>نسبة النجاح</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@e.Title</td>
+                        <td><span class="badge bg-primary-lt">@e.GroupName</span></td>
+                        <td>@e.ExamDate.ToString("yyyy-MM-dd")</td>
+                        <td>@e.MaxMarks</td>
+                        <td>@e.ResultsCount طالب</td>
+                        <td><div class="d-flex align-items-center gap-2"><div class="progress flex-fill" style="height:8px;width:80px"><div class="progress-bar bg-success" style="width:@e.SuccessRate%"></div></div><span>@e.SuccessRate%</span></div></td>
+                        <td>
+                            <a asp-action="Results" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary"><i class="fas fa-list"></i></a>
+                            <a asp-action="Ranking" asp-route-id="@e.Id" class="btn btn-sm btn-outline-info"><i class="fas fa-trophy"></i></a>
+                            <form asp-action="Delete" asp-route-id="@e.Id" method="post" style="display:inline"><button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('هل أنت متأكد؟')"><i class="fas fa-trash"></i></button></form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

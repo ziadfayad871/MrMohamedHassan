@@ -1,0 +1,27 @@
+@using MrMohamedHassan.Models
+@model IEnumerable<Payment>
+@{ ViewData["Title"] = "سجل المدفوعات"; var student = ViewBag.Student as Student; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">مدفوعات: @student?.FullName</h2>
+    <a asp-action="Details" asp-route-id="@student?.Id" class="btn btn-outline-secondary">رجوع</a>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-vcenter card-table">
+            <thead><tr><th>المبلغ</th><th>الخصم</th><th>المدفوع</th><th>التاريخ</th><th>رقم الإيصال</th><th>ملاحظات</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.Amount.ToString("N0") ج.م</td>
+                        <td>@p.Discount.ToString("N0")</td>
+                        <td class="text-success fw-bold">@p.PaidAmount.ToString("N0") ج.م</td>
+                        <td>@p.PaymentDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="badge bg-info-lt">@p.ReceiptNumber</span></td>
+                        <td>@p.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

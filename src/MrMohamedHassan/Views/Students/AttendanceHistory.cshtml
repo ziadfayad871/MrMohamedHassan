@@ -1,0 +1,32 @@
+@using MrMohamedHassan.Models
+@model IEnumerable<Attendance>
+@{ ViewData["Title"] = "سجل الحضور"; var student = ViewBag.Student as Student; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">حضور: @student?.FullName</h2>
+    <a asp-action="Details" asp-route-id="@student?.Id" class="btn btn-outline-secondary">رجوع</a>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-vcenter card-table">
+            <thead><tr><th>المجموعة</th><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.Group?.Name</td>
+                        <td>@a.Date.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            @switch (a.Status)
+                            {
+                                case AttendanceStatus.Present: <span class="badge bg-success-lt">حاضر</span> break;
+                                case AttendanceStatus.Absent: <span class="badge bg-danger-lt">غائب</span> break;
+                                case AttendanceStatus.Late: <span class="badge bg-warning-lt">متأخر</span> break;
+                            }
+                        </td>
+                        <td>@a.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

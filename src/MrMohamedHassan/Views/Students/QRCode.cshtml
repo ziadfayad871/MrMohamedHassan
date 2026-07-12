@@ -1,0 +1,16 @@
+@{ ViewData["Title"] = "QR Code"; var student = ViewBag.Student as MrMohamedHassan.Models.Student; var qrCode = ViewBag.QrCode as string; }
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="mb-4">كود QR - @student?.FullName</h3>
+                <img src="@qrCode" alt="QR Code" style="max-width:300px" class="mb-3" />
+                <p class="text-muted">@student?.StudentCode</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print ms-2"></i>طباعة</button>
+                    <a asp-action="Details" asp-route-id="@student?.Id" class="btn btn-outline-secondary">رجوع</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

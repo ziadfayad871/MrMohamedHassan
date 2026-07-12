@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "الحضور والغياب";
+}
+
+<div class="mb-4">
+    <h2>الحضور والغياب</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <a asp-action="TakeAttendance" class="card border-0 shadow-sm text-decoration-none">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-clipboard-check text-primary mb-3" style="font-size:3rem"></i>
+                <h3>تسجيل الحضور</h3>
+                <p class="text-muted">تسجيل حضور وغياب الطلاب</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 mb-4">
+        <a asp-action="DailyReport" class="card border-0 shadow-sm text-decoration-none">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-chart-bar text-success mb-3" style="font-size:3rem"></i>
+                <h3>التقرير اليومي</h3>
+                <p class="text-muted">عرض تقرير الحضور اليومي</p>
+            </div>
+        </a>
+    </div>
+</div>

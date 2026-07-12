@@ -1,0 +1,37 @@
+@{ ViewData["Title"] = "التقارير"; }
+<div class="mb-4"><h2>التقارير</h2></div>
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line text-primary mb-3" style="font-size:2.5rem"></i>
+                <h4>التقرير المالي</h4>
+                <p class="text-muted">إيرادات ومصروفات وصافي الربح</p>
+                <a asp-action="FinancialReport" class="btn btn-primary"><i class="fas fa-download ms-2"></i>تحميل</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-money-bill-wave text-success mb-3" style="font-size:2.5rem"></i>
+                <h4>تقرير المدفوعات</h4>
+                <p class="text-muted">سجل المدفوعات الشهرية</p>
+                <a asp-action="PaymentReport" class="btn btn-success"><i class="fas fa-download ms-2"></i>تحميل</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-clipboard-check text-info mb-3" style="font-size:2.5rem"></i>
+                <h4>تقرير الحضور</h4>
+                <p class="text-muted">إحصائيات الحضور والغياب</p>
+                <form asp-action="AttendanceReport" method="get" class="mt-2">
+                    <select name="groupId" class="form-select form-select-sm mb-2" required><option value="">اختر المجموعة</option></select>
+                    <button type="submit" class="btn btn-info"><i class="fas fa-download ms-2"></i>تحميل</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+@model MrMohamedHassan.ViewModels.GroupCreateViewModel
+@{
+    ViewData["Title"] = "إنشاء مجموعة جديدة";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title">إنشاء مجموعة جديدة</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <input type="hidden" asp-for="TeacherId" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Capacity" class="form-label"></label>
+                            <input asp-for="Capacity" class="form-control" type="number" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Fee" class="form-label"></label>
+                            <input asp-for="Fee" class="form-control" type="number" step="0.01" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Grade" class="form-label"></label>
+                            <input asp-for="Grade" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ScheduleDays" class="form-label"></label>
+                            <input asp-for="ScheduleDays" class="form-control" placeholder="مثال: السبت والاثنين والأربعاء" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="StartTime" class="form-label"></label>
+                            <input asp-for="StartTime" class="form-control" type="time" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="EndTime" class="form-label"></label>
+                            <input asp-for="EndTime" class="form-control" type="time" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="AcademicYear" class="form-label"></label>
+                            <input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" />
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">إنشاء</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">رجوع</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

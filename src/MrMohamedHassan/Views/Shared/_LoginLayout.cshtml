@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - مركز محمد حسن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <link href="/css/site.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #dbeafe 50%, #f0f4f8 100%);
+            background-size: 400% 400%;
+            animation: bgShift 8s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        @@keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .floating-shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            top: -80px;
+            left: -80px;
+            animation: floatSlow 6s ease-in-out infinite;
+        }
+        .floating-shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            background: var(--primary-light);
+            bottom: -50px;
+            right: -50px;
+            animation: floatSlow 8s ease-in-out infinite reverse;
+        }
+        .floating-shape:nth-child(3) {
+            width: 120px;
+            height: 120px;
+            background: var(--primary-dark);
+            bottom: 30%;
+            left: 5%;
+            animation: floatSlow 7s ease-in-out infinite 1s;
+        }
+        .floating-shape:nth-child(4) {
+            width: 80px;
+            height: 80px;
+            background: var(--info);
+            top: 20%;
+            right: 8%;
+            animation: floatSlow 5s ease-in-out infinite 0.5s;
+        }
+        @@keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(3deg); }
+            66% { transform: translateY(10px) rotate(-2deg); }
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 0.6s ease;
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-logo .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            animation: float 3s ease infinite;
+        }
+        .login-logo h2 {
+            margin: 1rem 0 0.25rem;
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: var(--text-primary);
+        }
+        .login-logo p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .login-card .btn {
+            padding: 0.65rem 1.5rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .login-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26,86,219,0.2);
+        }
+        .login-card .form-control {
+            padding: 0.6rem 0.85rem;
+            font-size: 0.9rem;
+        }
+        .login-card label.form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-icon">م</div>
+            <h2>مركز محمد حسن</h2>
+            <p>نظام إدارة المركز التعليمي</p>
+        </div>
+        @RenderBody()
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

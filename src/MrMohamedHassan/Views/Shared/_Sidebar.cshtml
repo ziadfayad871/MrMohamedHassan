@@ -1,0 +1,99 @@
+<aside style="position:fixed;top:0;right:0;bottom:0;width:var(--sidebar-width);background:var(--bg-sidebar);color:#fff;z-index:1000;overflow-y:auto;animation:slideIn 0.3s ease;">
+    <div style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <h5 style="margin:0;color:#fff;font-weight:800;">مركز محمد حسن</h5>
+        <small style="color:rgba(255,255,255,0.5);font-size:0.7rem;">نظام إدارة متكامل</small>
+    </div>
+
+    <nav style="padding:0.5rem;">
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;">القائمة الرئيسية</div>
+
+        <a class="sidebar-link" asp-controller="Home" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+        </a>
+
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;margin-top:0.5rem;">البيانات</div>
+
+        <a class="sidebar-link" asp-controller="Students" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Students" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-user-graduate"></i> الطلاب
+        </a>
+        <a class="sidebar-link" asp-controller="Groups" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Groups" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-layer-group"></i> المجموعات
+        </a>
+        <a class="sidebar-link" asp-controller="Attendance" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Attendance" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-clipboard-check"></i> الحضور
+        </a>
+
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;margin-top:0.5rem;">المالية</div>
+
+        <a class="sidebar-link" asp-controller="Payments" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Payments" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-money-bill-wave"></i> المدفوعات
+        </a>
+        <a class="sidebar-link" asp-controller="Expenses" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Expenses" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-receipt"></i> المصروفات
+        </a>
+
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;margin-top:0.5rem;">التعليم</div>
+
+        <a class="sidebar-link" asp-controller="Exams" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Exams" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-file-alt"></i> الامتحانات
+        </a>
+        <a class="sidebar-link" asp-controller="Homework" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Homework" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-tasks"></i> الواجبات
+        </a>
+
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;margin-top:0.5rem;">التقارير</div>
+
+        <a class="sidebar-link" asp-controller="Reports" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-chart-pie"></i> التقارير
+        </a>
+
+        <div style="padding:0.5rem 0.75rem;font-size:0.65rem;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.05em;margin-top:0.5rem;">النظام</div>
+
+        <a class="sidebar-link" asp-controller="Notifications" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Notifications" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-bell"></i> الإشعارات
+        </a>
+        <a class="sidebar-link" asp-controller="Settings" asp-action="Index" style="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" ? "background:var(--primary);color:#fff;" : "")">
+            <i class="fas fa-cog"></i> الإعدادات
+        </a>
+
+        <hr style="border-color:rgba(255,255,255,0.1);margin:0.75rem 0;" />
+
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="sidebar-link" style="width:100%;text-align:start;border:none;background:none;color:#ef4444;">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+        </form>
+    </nav>
+</aside>
+
+<style>
+@@keyframes slideIn {
+    from { transform: translateX(50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-bottom: 1px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+.sidebar-link i { width: 18px; text-align: center; font-size: 0.9rem; flex-shrink: 0; transition: transform 0.2s; }
+.sidebar-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-link:hover i { transform: scale(1.15); }
+.sidebar-link.active { background: var(--primary); color: #fff; }
+
+aside::-webkit-scrollbar { width: 3px; }
+aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+@@media (max-width: 991.98px) {
+    aside { transform: translateX(100%); }
+    main { margin-right: 0 !important; }
+}
+</style>
