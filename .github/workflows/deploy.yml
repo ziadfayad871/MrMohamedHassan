@@ -21,18 +21,18 @@ jobs:
         run: dotnet restore src/MrMohamedHassan/MrMohamedHassan.csproj
 
       - name: Publish
-        run: dotnet publish src/MrMohamedHassan/MrMohamedHassan.csproj -c Release --no-restore -o ./publish
-
-      - name: Install Web Deploy
-        run: choco install webdeploy -y --no-progress
-
-      - name: Deploy
-        shell: cmd
         run: |
-          "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe" ^
-            -verb:sync ^
-            -source:contentPath="%CD%\publish" ^
-            -dest:contentPath=site79189,computerName=https://site79189.siteasp.net:8172/msdeploy.axd?site=site79189,userName=site79189,password=%DEPLOY_PASSWORD%,authType=Basic ^
-            -allowUntrusted -enableRule:DoNotDeleteRule
-        env:
-          DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+          Remove-Item -Path ./publish -Recurse -Force -ErrorAction SilentlyContinue
+          dotnet publish src/MrMohamedHassan/MrMohamedHassan.csproj -c Release --no-restore -o ./publish
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site79189.siteasp.net
+          username: site79189
+          password: ${{ secrets.DEPLOY_PASSWORD }}
+          local-dir: ./publish/
+          server-dir: /
+          dangerous-clean-slate: false
+          exclude: |
+            **/app_offline.htm
