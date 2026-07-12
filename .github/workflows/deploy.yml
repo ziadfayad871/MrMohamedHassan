@@ -27,11 +27,12 @@ jobs:
         run: choco install webdeploy -y --no-progress
 
       - name: Deploy
-        shell: pwsh
+        shell: cmd
         run: |
-          $msdeploy = Get-ChildItem -Path "C:\Program Files" -Recurse -Filter "msdeploy.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $msdeploy) { throw "msdeploy.exe not found" }
-          Write-Host "Found msdeploy: $msdeploy"
-          & $msdeploy -verb:sync -source:contentPath="$pwd\publish" -dest:contentPath=site79189,computerName="https://site79189.siteasp.net:8172/msdeploy.axd?site=site79189",userName=site79189,password=$env:DEPLOY_PASSWORD,authType=Basic -allowUntrusted -enableRule:DoNotDeleteRule
+          "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe" ^
+            -verb:sync ^
+            -source:contentPath="%CD%\publish" ^
+            -dest:contentPath=site79189,computerName=https://site79189.siteasp.net:8172/msdeploy.axd?site=site79189,userName=site79189,password=%DEPLOY_PASSWORD%,authType=Basic ^
+            -allowUntrusted -enableRule:DoNotDeleteRule
         env:
           DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
