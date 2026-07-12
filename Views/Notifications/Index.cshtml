@@ -1,0 +1,31 @@
+@model List<MrMohamedHassan.ViewModels.NotificationListViewModel>
+@{ ViewData["Title"] = "الإشعارات"; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">الإشعارات</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus ms-2"></i>إرسال إشعار</a>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="list-group list-group-flush">
+        @foreach (var n in Model)
+        {
+            <div class="list-group-item @(n.IsRead ? "" : "bg-opacity-10")">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 @(n.IsRead ? "" : "fw-bold")">
+                            <i class="fas fa-bell text-primary ms-1"></i> @n.Title
+                        </h6>
+                        <p class="text-muted mb-0">@n.Message</p>
+                    </div>
+                    <small class="text-muted">@n.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+            </div>
+        }
+        @if (!Model.Any())
+        {
+            <div class="list-group-item text-center py-5">
+                <i class="fas fa-bell-slash text-muted mb-3" style="font-size:3rem"></i>
+                <p class="text-muted">لا توجد إشعارات</p>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "خطأ";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>خطأ - مركز محمد حسن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@@tabler/core@1.0.0-beta17/dist/css/tabler-rtl.min.css" rel="stylesheet" />
+</head>
+<body class="d-flex align-items-center">
+    <div class="container">
+        <div class="page page-center">
+            <div class="container-tight py-4">
+                <div class="empty">
+                    <div class="empty-icon">
+                        <i class="fas fa-exclamation-triangle" style="font-size:4rem;color:var(--tblr-warning)"></i>
+                    </div>
+                    <p class="empty-title">عذراً، حدث خطأ</p>
+                    <p class="empty-subtitle text-muted">حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.</p>
+                    <div class="empty-action">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-home ms-2"></i>العودة للرئيسية
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

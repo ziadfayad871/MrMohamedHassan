@@ -1,0 +1,28 @@
+@model MrMohamedHassan.ViewModels.SettingsViewModel
+@{ ViewData["Title"] = "الإعدادات"; }
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-cog ms-2"></i>إعدادات المركز</h3></div>
+            <div class="card-body">
+                <form asp-action="Index" method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label asp-for="CenterName" class="form-label"></label><input asp-for="CenterName" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="CenterPhone" class="form-label"></label><input asp-for="CenterPhone" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="CenterEmail" class="form-label"></label><input asp-for="CenterEmail" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="CenterAddress" class="form-label"></label><input asp-for="CenterAddress" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="AcademicYear" class="form-label"></label><input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="Currency" class="form-label"></label><input asp-for="Currency" class="form-control" /></div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">شعار المركز الحالي</label>
+                            @if (!string.IsNullOrEmpty(Model.CenterLogo))
+                            { <div><img src="@Model.CenterLogo" style="max-height:80px" class="mb-2" /></div> }
+                            <input asp-for="LogoFile" type="file" class="form-control" accept="image/*" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save ms-2"></i>حفظ الإعدادات</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

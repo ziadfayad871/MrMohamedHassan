@@ -1,0 +1,53 @@
+@model MrMohamedHassan.ViewModels.GroupDetailsViewModel
+@{
+    ViewData["Title"] = $"تفاصيل المجموعة - {Model.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.Name</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="fas fa-edit ms-2"></i>تعديل</a>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-right ms-2"></i>رجوع</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header"><h4 class="card-title">معلومات المجموعة</h4></div>
+            <div class="card-body">
+                <div class="mb-2"><span class="text-muted">المادة:</span> <strong>@Model.Subject</strong></div>
+                <div class="mb-2"><span class="text-muted">المعلم:</span> <strong>@Model.TeacherName</strong></div>
+                <div class="mb-2"><span class="text-muted">السعة:</span> <strong>@Model.Capacity</strong></div>
+                <div class="mb-2"><span class="text-muted">الأيام:</span> <strong>@Model.ScheduleDays</strong></div>
+                <div class="mb-2"><span class="text-muted">الوقت:</span> <strong>@Model.StartTime?.ToString(@"hh\:mm") - @Model.EndTime?.ToString(@"hh\:mm")</strong></div>
+                <div class="mb-2"><span class="text-muted">الرسوم:</span> <strong>@Model.Fee.ToString("N0") ج.م</strong></div>
+                <div class="mb-2"><span class="text-muted">الحالة:</span> <span class="badge @(Model.IsActive ? "bg-success-lt" : "bg-secondary-lt")">@(Model.IsActive ? "نشطة" : "غير نشطة")</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h4 class="card-title">الطلاب (@Model.Students.Count)</h4>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-vcenter card-table">
+                    <thead>
+                        <tr><th>الطالب</th><th>الكود</th><th>الهاتف</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.Students)
+                        {
+                            <tr>
+                                <td><a asp-controller="Students" asp-action="Details" asp-route-id="@student.Id">@student.FullName</a></td>
+                                <td><span class="badge bg-azure-lt">@student.StudentCode</span></td>
+                                <td>@student.Phone</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

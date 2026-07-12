@@ -1,0 +1,134 @@
+@model MrMohamedHassan.ViewModels.StudentDetailsViewModel
+@{
+    ViewData["Title"] = $"تفاصيل الطالب - {Model.FullName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.FullName</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="fas fa-edit ms-2"></i>تعديل</a>
+        <a asp-action="QrCode" asp-route-id="@Model.Id" class="btn btn-outline-primary"><i class="fas fa-qrcode ms-2"></i>QR Code</a>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-right ms-2"></i>رجوع</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.FullName" class="avatar avatar-xl mb-3" />
+                }
+                else
+                {
+                    <div class="avatar avatar-xl bg-primary-l text-primary mb-3 mx-auto">
+                        <i class="fas fa-user" style="font-size:3rem"></i>
+                    </div>
+                }
+                <h3>@Model.FullName</h3>
+                <span class="badge bg-azure-lt mb-2">@Model.StudentCode</span>
+                <div class="mt-2">
+                    @switch (Model.Status)
+                    {
+                        case MrMohamedHassan.Models.StudentStatus.Active:
+                            <span class="badge bg-success-lt">نشط</span>
+                            break;
+                        case MrMohamedHassan.Models.StudentStatus.Inactive:
+                            <span class="badge bg-warning-lt">غير نشط</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary-lt">@Model.Status</span>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header"><h4 class="card-title">المالية</h4></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">رسوم الاشتراك</span>
+                    <span class="fw-bold">@Model.SubscriptionFee.ToString("N0") ج.م</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">المدفوع</span>
+                    <span class="fw-bold text-success">@Model.TotalPaid.ToString("N0") ج.م</span>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold">المتبقي</span>
+                    <span class="fw-bold @(Model.RemainingBalance > 0 ? "text-danger" : "text-success")">@Model.RemainingBalance.ToString("N0") ج.م</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header"><h4 class="card-title">البيانات الشخصية</h4></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">هاتف الطالب</div>
+                        <div class="fw-bold">@Model.Phone</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">ولي الأمر</div>
+                        <div class="fw-bold">@Model.ParentName</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">هاتف ولي الأمر</div>
+                        <div class="fw-bold">@Model.ParentPhone</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">المدرسة</div>
+                        <div class="fw-bold">@Model.School</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">المرحلة الدراسية</div>
+                        <div class="fw-bold">@Model.Grade</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">الجنس</div>
+                        <div class="fw-bold">@(Model.Gender == MrMohamedHassan.Models.Gender.Male ? "ذكر" : "أنثى")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">تاريخ الالتحاق</div>
+                        <div class="fw-bold">@Model.JoinDate.ToString("yyyy-MM-dd")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-muted text-sm">نسبة الحضور</div>
+                        <div class="fw-bold">@Model.AttendancePercentage%</div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="text-muted text-sm">العنوان</div>
+                        <div class="fw-bold">@Model.Address</div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="text-muted text-sm">ملاحظات</div>
+                        <div>@Model.Notes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header"><h4 class="card-title">المجموعات</h4></div>
+            <div class="card-body">
+                @if (Model.Groups.Any())
+                {
+                    @foreach (var group in Model.Groups)
+                    {
+                        <span class="badge bg-primary-lt me-1 mb-1" style="font-size:0.9rem">@group</span>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">لم يتم تسجيل في أي مجموعة</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
