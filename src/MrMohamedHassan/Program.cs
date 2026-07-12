@@ -106,8 +106,16 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-    await context.Database.MigrateAsync();
-    await SeedData.InitializeAsync(services, userManager, roleManager);
+    try
+    {
+        await context.Database.MigrateAsync();
+        await SeedData.InitializeAsync(services, userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database migration or seeding.");
+    }
 }
 
 app.Run();
