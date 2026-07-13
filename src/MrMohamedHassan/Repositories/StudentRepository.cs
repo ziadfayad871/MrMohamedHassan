@@ -25,10 +25,43 @@ public class StudentRepository : GenericRepository<Student>, IStudentRepository
             .ToListAsync();
     }
 
-    public async Task<string> GenerateStudentCodeAsync()
+    public async Task<string> GenerateStudentCodeAsync(int? groupId = null)
     {
-        var count = await _dbSet.CountAsync();
-        return $"STU-{(count + 1):D5}";
+        if (groupId == null)
+        {
+            var count = await _dbSet.CountAsync();
+            return $"N{count + 1}";
+        }
+
+        var letter = IdToLetter(groupId.Value);
+        var prefix = letter;
+        var existing = await _dbSet
+            .Where(s => s.StudentCode.StartsWith(prefix) && !s.IsDeleted)
+            .Select(s => s.StudentCode)
+            .ToListAsync();
+
+        var maxNum = 0;
+        foreach (var code in existing)
+        {
+            var numPart = code[prefix.Length..];
+            if (int.TryParse(numPart, out var n) && n > maxNum)
+                maxNum = n;
+        }
+
+        return $"{prefix}{maxNum + 1}";
+    }
+
+    private static string IdToLetter(int id)
+    {
+        var result = "";
+        var n = id;
+        while (n > 0)
+        {
+            n--;
+            result = (char)('A' + n % 26) + result;
+            n /= 26;
+        }
+        return result;
     }
 
     public async Task<int> GetActiveStudentCountAsync()

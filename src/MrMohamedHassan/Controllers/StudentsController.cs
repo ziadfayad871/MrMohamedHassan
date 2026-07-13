@@ -83,8 +83,10 @@ public class StudentsController : Controller
             return View(model);
         }
 
+        var primaryGroupId = model.SelectedGroupIds.FirstOrDefault();
         var student = new Student
         {
+            StudentCode = await _studentService.GenerateStudentCodeAsync(primaryGroupId > 0 ? primaryGroupId : null),
             FullName = model.FullName,
             Phone = model.Phone,
             ParentName = model.ParentName,

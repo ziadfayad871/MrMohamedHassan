@@ -18,7 +18,8 @@ public class StudentService : IStudentService
 
     public async Task<Student> CreateAsync(Student student)
     {
-        student.StudentCode = await _studentRepository.GenerateStudentCodeAsync();
+        if (string.IsNullOrEmpty(student.StudentCode))
+            student.StudentCode = await _studentRepository.GenerateStudentCodeAsync();
         student.CreatedAt = DateTime.UtcNow;
         return await _studentRepository.AddAsync(student);
     }
@@ -43,8 +44,8 @@ public class StudentService : IStudentService
     public async Task<Student?> GetStudentWithDetailsAsync(int id)
         => await _studentRepository.GetStudentWithDetailsAsync(id);
 
-    public async Task<string> GenerateStudentCodeAsync()
-        => await _studentRepository.GenerateStudentCodeAsync();
+    public async Task<string> GenerateStudentCodeAsync(int? groupId = null)
+        => await _studentRepository.GenerateStudentCodeAsync(groupId);
 
     public async Task<int> GetActiveCountAsync()
         => await _studentRepository.GetActiveStudentCountAsync();

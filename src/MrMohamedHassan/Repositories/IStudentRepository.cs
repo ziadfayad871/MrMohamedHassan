@@ -6,6 +6,6 @@ public interface IStudentRepository : IGenericRepository<Student>
 {
     Task<Student?> GetStudentWithDetailsAsync(int id);
     Task<IEnumerable<Student>> GetStudentsByGroupAsync(int groupId);
-    Task<string> GenerateStudentCodeAsync();
+    Task<string> GenerateStudentCodeAsync(int? groupId = null);
     Task<int> GetActiveStudentCountAsync();
 }

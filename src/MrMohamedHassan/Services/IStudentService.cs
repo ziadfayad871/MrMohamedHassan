@@ -10,7 +10,7 @@ public interface IStudentService
     Task UpdateAsync(Student student);
     Task SoftDeleteAsync(int id);
     Task<Student?> GetStudentWithDetailsAsync(int id);
-    Task<string> GenerateStudentCodeAsync();
+    Task<string> GenerateStudentCodeAsync(int? groupId = null);
     Task<int> GetActiveCountAsync();
     Task<IEnumerable<Student>> SearchAsync(string? name, string? code, StudentStatus? status);
 }
