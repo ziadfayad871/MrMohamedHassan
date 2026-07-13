@@ -11,7 +11,7 @@ public class ExamRepository : GenericRepository<Exam>, IExamRepository
     public async Task<Exam?> GetExamWithResultsAsync(int id)
     {
         return await _dbSet
-            .Include(e => e.Group)
+            .Include(e => e.Group).ThenInclude(g => g.StudentGroups).ThenInclude(sg => sg.Student)
             .Include(e => e.Results).ThenInclude(r => r.Student)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
