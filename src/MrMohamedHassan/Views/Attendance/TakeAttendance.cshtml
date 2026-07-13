@@ -3,16 +3,15 @@
     ViewData["Title"] = "تسجيل الحضور";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">تسجيل الحضور</h2>
-</div>
-
-<div class="card border-0 shadow-sm mb-4">
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="card-title">تسجيل الحضور بالكود</h4>
+    </div>
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">المجموعة</label>
-                <select name="groupId" class="form-select">
+                <select name="groupId" class="form-select" onchange="this.form.submit()">
                     <option value="">-- اختر المجموعة --</option>
                     @foreach (var group in (IEnumerable<dynamic>)ViewBag.Groups)
                     {
@@ -25,64 +24,231 @@
                 <input type="date" name="date" value="@ViewBag.SelectedDate?.ToString("yyyy-MM-dd")" class="form-control" />
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-search ms-2"></i>عرض</button>
+                <button type="submit" class="btn btn-primary">عرض</button>
             </div>
         </form>
     </div>
 </div>
 
-@if (Model.Students.Any())
+@if (Model.GroupId > 0)
 {
-    <form asp-action="TakeAttendance" method="post">
-        <input type="hidden" asp-for="GroupId" />
-        <input type="hidden" asp-for="Date" />
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-header">
-                <h4 class="card-title">الطلاب - @Model.Students.Count طالب</h4>
-                <button type="submit" class="btn btn-primary btn-sm ms-auto"><i class="fas fa-save ms-2"></i>حفظ الحضور</button>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">اكتب كود الطالب</label>
+                    <div class="input-group">
+                        <input type="text" id="studentCodeInput" class="form-control" placeholder="ادخل كود الطالب..." autofocus />
+                        <button type="button" class="btn btn-primary" onclick="searchStudent()"><i class="fas fa-search"></i> بحث</button>
+                    </div>
+                    <small class="text-muted">ادخل كود الطالب واضغط Enter</small>
+                </div>
+                <div class="col-md-6 text-start">
+                    <button type="button" class="btn btn-warning" onclick="recordAbsentees()">
+                        <i class="fas fa-user-times"></i> تسجيل غياب الباقي
+                    </button>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover table-vcenter card-table">
-                    <thead>
-                        <tr>
-                            <th>الطالب</th>
-                            <th>الكود</th>
-                            <th>الحالة</th>
-                            <th>ملاحظات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (int i = 0; i < Model.Students.Count; i++)
-                        {
-                            <tr>
-                                <input type="hidden" asp-for="Students[@i].StudentId" />
-                                <input type="hidden" asp-for="Students[@i].StudentName" />
-                                <input type="hidden" asp-for="Students[@i].StudentCode" />
-                                <td class="fw-bold">@Model.Students[i].StudentName</td>
-                                <td><span class="badge bg-azure-lt">@Model.Students[i].StudentCode</span></td>
-                                <td>
-                                    <select asp-for="Students[@i].Status" class="form-select form-select-sm">
-                                        <option value="Present">حاضر</option>
-                                        <option value="Absent">غائب</option>
-                                        <option value="Late">متأخر</option>
-                                    </select>
-                                </td>
-                                <td><input asp-for="Students[@i].Notes" class="form-control form-control-sm" placeholder="ملاحظات..." /></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </form>
-}
-else if (Model.GroupId > 0)
-{
-    <div class="card border-0 shadow-sm">
-        <div class="card-body text-center py-5">
-            <i class="fas fa-users text-muted mb-3" style="font-size:3rem"></i>
-            <p class="text-muted">لا يوجد طلاب في هذه المجموعة</p>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title">سجل الحضور اليوم</h5>
+            <span class="badge bg-primary" id="attendedCount">@Model.Students.Count طالب</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>الاسم</th>
+                        <th>الحالة</th>
+                        <th>الوقت</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    @foreach (var s in Model.Students)
+                    {
+                        <tr id="row-@s.StudentId" class="@(s.Status == AttendanceStatus.Absent ? "table-danger" : s.Status == AttendanceStatus.Late ? "table-warning" : "")">
+                            <td><span class="badge bg-secondary">@s.StudentCode</span></td>
+                            <td>@s.StudentName</td>
+                            <td>
+                                <span class="badge bg-@(s.Status == AttendanceStatus.Present ? "success" : s.Status == AttendanceStatus.Late ? "warning" : "danger")">
+                                    @(s.Status == AttendanceStatus.Present ? "حاضر" : s.Status == AttendanceStatus.Late ? "متأخر" : "غائب")
+                                </span>
+                            </td>
+                            <td class="text-muted small">اليوم</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Student Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">بيانات الطالب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center py-4 text-muted" id="modalLoading">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                    <p>جاري البحث...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="attendanceForm" asp-action="TakeAttendance" method="post" style="display:none;">
+    <input type="hidden" asp-for="GroupId" />
+    <input type="hidden" asp-for="Date" />
+</form>
+
+<form id="absenteesForm" asp-action="RecordAbsentees" method="get" style="display:none;">
+    <input type="hidden" name="groupId" value="@Model.GroupId" />
+    <input type="hidden" name="date" value="@ViewBag.SelectedDate?.ToString("yyyy-MM-dd")" />
+</form>
+
+@section Scripts {
+<script>
+    var currentGroupId = @Model.GroupId;
+    var currentDate = '@ViewBag.SelectedDate?.ToString("yyyy-MM-dd")';
+
+    document.getElementById('studentCodeInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); searchStudent(); }
+    });
+
+    function searchStudent() {
+        var code = document.getElementById('studentCodeInput').value.trim();
+        if (!code) return;
+        if (!currentGroupId) { alert('اختر المجموعة أولاً'); return; }
+
+        var modal = new bootstrap.Modal(document.getElementById('studentModal'));
+        document.getElementById('modalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري البحث...</p></div>';
+        modal.show();
+
+        fetch('/Attendance/GetStudentInfo?code=' + encodeURIComponent(code) + '&groupId=' + currentGroupId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    document.getElementById('modalBody').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle fa-2x mb-2"></i><p>' + data.error + '</p><button class="btn btn-secondary mt-2" data-bs-dismiss="modal">حسناً</button></div>';
+                    return;
+                }
+                renderModal(data);
+            })
+            .catch(function() {
+                document.getElementById('modalBody').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><p>حدث خطأ في الاتصال</p><button class="btn btn-secondary mt-2" data-bs-dismiss="modal">حسناً</button></div>';
+            });
+    }
+
+    function renderModal(data) {
+        var today = data.todayAttendance;
+        var paidHtml = data.monthlyPaid
+            ? '<span class="badge bg-success" style="font-size:1rem;"><i class="fas fa-check-circle"></i> دفع بتاريخ: ' + new Date(data.lastPaymentDate).toLocaleDateString('ar-EG') + '</span>'
+            : '<span class="badge bg-danger" style="font-size:1rem;"><i class="fas fa-times-circle"></i> لم يسدد</span>';
+
+        var payBtn = data.monthlyPaid ? '' : '<a href="/Payments/Create?studentId=' + data.studentId + '" class="btn btn-success btn-sm mt-2"><i class="fas fa-credit-card"></i> سدد الآن</a>';
+
+        document.getElementById('modalBody').innerHTML =
+            '<div class="row mb-3">' +
+                '<div class="col-12 text-center mb-3">' +
+                    '<h4 class="fw-bold mb-1">' + data.fullName + '</h4>' +
+                    '<span class="badge bg-secondary">' + data.studentCode + '</span>' +
+                    (data.groupName ? ' <span class="badge bg-info">' + data.groupName + '</span>' : '') +
+                '</div>' +
+                '<div class="col-12 mb-3">' +
+                    '<div class="d-flex justify-content-around align-items-center p-3 bg-light rounded">' +
+                        '<div class="text-center">' +
+                            '<div class="mb-1 small text-muted">الاشتراك الشهري</div>' +
+                            paidHtml +
+                            '<div class="mt-2">' + payBtn + '</div>' +
+                        '</div>' +
+                        '<div class="text-center">' +
+                            '<div class="mb-1 small text-muted">رسوم الاشتراك</div>' +
+                            '<strong>' + data.subscriptionFee.toLocaleString('ar-EG') + ' ج.م</strong>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="col-12">' +
+                    '<label class="form-label fw-bold">تسجيل الحالة</label>' +
+                    '<div class="d-flex gap-2 justify-content-center">' +
+                        '<button type="button" class="btn btn-lg ' + (today === 'Present' ? 'btn-success' : 'btn-outline-success') + '" onclick="recordAttendance(\'Present\', ' + data.studentId + ')"><i class="fas fa-check"></i> حاضر</button>' +
+                        '<button type="button" class="btn btn-lg ' + (today === 'Late' ? 'btn-warning' : 'btn-outline-warning') + '" onclick="recordAttendance(\'Late\', ' + data.studentId + ')"><i class="fas fa-clock"></i> متأخر</button>' +
+                        '<button type="button" class="btn btn-lg ' + (today === 'Absent' ? 'btn-danger' : 'btn-outline-danger') + '" onclick="recordAttendance(\'Absent\', ' + data.studentId + ')"><i class="fas fa-times"></i> غائب</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="text-center mt-2">' +
+                '<button class="btn btn-sm btn-secondary" onclick="closeAndClear()">إغلاق</button>' +
+            '</div>';
+    }
+
+    function recordAttendance(status, studentId) {
+        var btns = document.querySelectorAll('#modalBody .btn-lg');
+        btns.forEach(function(b) { b.disabled = true; });
+
+        fetch('/Attendance/RecordAttendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': '' },
+            body: JSON.stringify({ studentId: studentId, groupId: currentGroupId, status: status })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                updateTableRow(studentId, status);
+                document.getElementById('studentCodeInput').value = '';
+                document.getElementById('studentCodeInput').focus();
+                // Update modal buttons
+                btns.forEach(function(b) { b.className = b.className.replace('btn-', 'btn-outline-'); });
+                var targetBtn = event && event.target ? event.target : null;
+                closeAndClear();
+            }
+        })
+        .catch(function() { alert('حدث خطأ'); })
+        .finally(function() { btns.forEach(function(b) { b.disabled = false; }); });
+    }
+
+    function updateTableRow(studentId, status) {
+        var row = document.getElementById('row-' + studentId);
+        if (!row) {
+            // Add new row
+            var tbody = document.getElementById('attendanceTableBody');
+            var tr = document.createElement('tr');
+            tr.id = 'row-' + studentId;
+            tr.innerHTML = '<td colspan="4" class="text-center text-muted">جاري التحديث...</td>';
+            tbody.prepend(tr);
+            location.reload();
+            return;
+        }
+        var badge = row.querySelector('.badge');
+        if (badge) {
+            var cls = status === 'Present' ? 'success' : status === 'Late' ? 'warning' : 'danger';
+            var txt = status === 'Present' ? 'حاضر' : status === 'Late' ? 'متأخر' : 'غائب';
+            badge.className = 'badge bg-' + cls;
+            badge.textContent = txt;
+        }
+        row.className = status === 'Present' ? '' : status === 'Late' ? 'table-warning' : 'table-danger';
+    }
+
+    function closeAndClear() {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('studentModal'));
+        if (modal) modal.hide();
+        document.getElementById('studentCodeInput').value = '';
+        document.getElementById('studentCodeInput').focus();
+    }
+
+    function recordAbsentees() {
+        if (!confirm('هل تريد تسجيل غياب للطلاب الباقين (اللي مدخلتش كوداتهم)؟')) return;
+        document.getElementById('absenteesForm').submit();
+    }
+
+    // Auto focus
+    document.getElementById('studentCodeInput').focus();
+</script>
 }

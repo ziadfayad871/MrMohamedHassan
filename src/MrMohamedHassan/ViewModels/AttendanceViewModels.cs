@@ -35,6 +35,27 @@ public class AttendanceReportViewModel
     public List<AttendanceReportItemViewModel> Records { get; set; } = new();
 }
 
+public class StudentAttendanceInfo
+{
+    public int StudentId { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public string? GroupName { get; set; }
+    public string? TodayAttendance { get; set; }
+    public bool MonthlyPaid { get; set; }
+    public DateTime? LastPaymentDate { get; set; }
+    public decimal SubscriptionFee { get; set; }
+    public int GroupId { get; set; }
+}
+
+public class RecordAttendanceRequest
+{
+    public int StudentId { get; set; }
+    public int GroupId { get; set; }
+    public string Status { get; set; } = "Absent";
+}
+
 public class AttendanceReportItemViewModel
 {
     public int StudentId { get; set; }

@@ -73,6 +73,107 @@ public class AttendanceController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetStudentInfo(string code, int groupId)
+    {
+        var student = await _context.Students
+            .Include(s => s.StudentGroups.Where(sg => sg.GroupId == groupId))
+            .ThenInclude(sg => sg.Group)
+            .Include(s => s.Payments)
+            .FirstOrDefaultAsync(s => s.StudentCode == code && !s.IsDeleted);
+
+        if (student == null)
+            return Json(new { error = "الطالب غير موجود" });
+
+        var today = DateTime.Today;
+        var monthStart = new DateTime(today.Year, today.Month, 1);
+        var existingAtt = await _context.Attendances
+            .FirstOrDefaultAsync(a => a.StudentId == student.Id && a.GroupId == groupId && a.Date.Date == today);
+
+        var monthlyPayment = student.Payments
+            .Where(p => p.PaymentType == PaymentType.Subscription && p.PaymentDate >= monthStart && p.PaymentDate < monthStart.AddMonths(1))
+            .OrderByDescending(p => p.PaymentDate)
+            .FirstOrDefault();
+
+        var groupName = student.StudentGroups.FirstOrDefault()?.Group?.Name ?? "";
+
+        return Json(new StudentAttendanceInfo
+        {
+            StudentId = student.Id,
+            StudentCode = student.StudentCode,
+            FullName = student.FullName,
+            Phone = student.Phone,
+            GroupName = groupName,
+            GroupId = groupId,
+            TodayAttendance = existingAtt?.Status.ToString(),
+            MonthlyPaid = monthlyPayment != null,
+            LastPaymentDate = monthlyPayment?.PaymentDate,
+            SubscriptionFee = student.SubscriptionFee
+        });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RecordAttendance([FromBody] RecordAttendanceRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var today = DateTime.Today;
+
+        var existing = await _context.Attendances
+            .FirstOrDefaultAsync(a => a.StudentId == request.StudentId && a.GroupId == request.GroupId && a.Date.Date == today);
+
+        if (existing != null)
+        {
+            existing.Status = Enum.Parse<AttendanceStatus>(request.Status);
+            existing.CheckInTime = request.Status == "Present" || request.Status == "Late" ? DateTime.Now : null;
+        }
+        else
+        {
+            _context.Attendances.Add(new Attendance
+            {
+                StudentId = request.StudentId,
+                GroupId = request.GroupId,
+                Date = today,
+                Status = Enum.Parse<AttendanceStatus>(request.Status),
+                CheckInTime = request.Status == "Present" || request.Status == "Late" ? DateTime.Now : null,
+                RecordedById = userId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return Json(new { success = true, status = request.Status });
+    }
+
+    public async Task<IActionResult> RecordAbsentees(int groupId, DateTime? date)
+    {
+        var selectedDate = date ?? DateTime.Today;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var students = await _context.Students
+            .Where(s => s.StudentGroups.Any(sg => sg.GroupId == groupId && sg.IsActive) && !s.IsDeleted)
+            .ToListAsync();
+
+        var existingIds = await _context.Attendances
+            .Where(a => a.GroupId == groupId && a.Date.Date == selectedDate.Date)
+            .Select(a => a.StudentId)
+            .ToListAsync();
+
+        var absentees = students.Where(s => !existingIds.Contains(s.Id)).ToList();
+        foreach (var student in absentees)
+        {
+            _context.Attendances.Add(new Attendance
+            {
+                StudentId = student.Id,
+                GroupId = groupId,
+                Date = selectedDate,
+                Status = AttendanceStatus.Absent,
+                RecordedById = userId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"تم تسجيل غياب {absentees.Count} طالب";
+        return RedirectToAction(nameof(TakeAttendance), new { groupId });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> TakeAttendance(AttendanceTakeViewModel model)
