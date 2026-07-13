@@ -32,6 +32,6 @@ jobs:
             -verb:sync ^
             -source:contentPath="%CD%\publish" ^
             -dest:contentPath=site79202,computerName=https://site79202.siteasp.net:8172/msdeploy.axd?site=site79202,userName=site79202,password=%DEPLOY_PASSWORD%,authType=Basic ^
-            -allowUntrusted -enableRule:AppOffline
+            -allowUntrusted -enableRule:AppOffline -enableRule:DoNotDeleteRule
         env:
           DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
