@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MrMohamedHassan.Data;
 using MrMohamedHassan.Models;
 using MrMohamedHassan.Services;
 using MrMohamedHassan.ViewModels;
@@ -12,12 +14,14 @@ public class ExamsController : Controller
     private readonly IExamService _examService;
     private readonly IGroupService _groupService;
     private readonly IExportService _exportService;
+    private readonly ApplicationDbContext _context;
 
-    public ExamsController(IExamService examService, IGroupService groupService, IExportService exportService)
+    public ExamsController(IExamService examService, IGroupService groupService, IExportService exportService, ApplicationDbContext context)
     {
         _examService = examService;
         _groupService = groupService;
         _exportService = exportService;
+        _context = context;
     }
 
     public async Task<IActionResult> Index()
@@ -71,6 +75,84 @@ public class ExamsController : Controller
         await _examService.CreateAsync(exam);
         TempData["Success"] = "تم إنشاء الامتحان بنجاح";
         return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> EnterGrades(int id)
+    {
+        var exam = await _examService.GetExamWithResultsAsync(id);
+        if (exam == null) return NotFound();
+
+        ViewBag.ExamTitle = exam.Title;
+        ViewBag.MaxMarks = exam.MaxMarks;
+        ViewBag.PassMarks = exam.PassMarks;
+        ViewBag.GroupId = exam.GroupId;
+        ViewBag.ExamId = exam.Id;
+
+        return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetStudentForGrade(int examId, string code)
+    {
+        var exam = await _context.Exams.FindAsync(examId);
+        if (exam == null) return Json(new { error = "الامتحان غير موجود" });
+
+        var student = await _context.Students
+            .Include(s => s.StudentGroups.Where(sg => sg.GroupId == exam.GroupId && sg.IsActive))
+            .FirstOrDefaultAsync(s => s.StudentCode == code && !s.IsDeleted);
+
+        if (student == null)
+            return Json(new { error = "الطالب غير موجود في هذه المجموعة" });
+
+        if (!student.StudentGroups.Any())
+            return Json(new { error = "الطالب غير مسجل في هذه المجموعة" });
+
+        var existing = await _context.ExamResults
+            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == student.Id);
+
+        return Json(new
+        {
+            studentId = student.Id,
+            studentCode = student.StudentCode,
+            fullName = student.FullName,
+            marksObtained = existing?.MarksObtained ?? 0,
+            hasExisting = existing != null
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveStudentGrade(int examId, int studentId, int marksObtained, string? notes)
+    {
+        var exam = await _context.Exams.FindAsync(examId);
+        if (exam == null) return Json(new { error = "الامتحان غير موجود" });
+
+        if (marksObtained < 0 || marksObtained > exam.MaxMarks)
+            return Json(new { error = $"الدرجة يجب أن تكون بين 0 و {exam.MaxMarks}" });
+
+        var existing = await _context.ExamResults
+            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId);
+
+        if (existing != null)
+        {
+            existing.MarksObtained = marksObtained;
+            existing.Notes = notes;
+        }
+        else
+        {
+            _context.ExamResults.Add(new ExamResult
+            {
+                ExamId = examId,
+                StudentId = studentId,
+                MarksObtained = marksObtained,
+                Notes = notes
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        var status = marksObtained >= exam.PassMarks ? "ناجح" : "راسب";
+        return Json(new { success = true, message = $"تم حفظ درجة {marksObtained} للطالب", status });
     }
 
     public async Task<IActionResult> Results(int id)

@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = $"إضافة درجات - {ViewBag.ExamTitle}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">إضافة درجات: @ViewBag.ExamTitle</h2>
+    <div class="d-flex gap-2">
+        <span class="badge bg-info fs-6">الدرجة النهائية: @ViewBag.MaxMarks</span>
+        <span class="badge bg-warning fs-6">درجة النجاح: @ViewBag.PassMarks</span>
+        <a asp-action="Results" asp-route-id="@ViewBag.ExamId" class="btn btn-outline-primary"><i class="fas fa-list ms-2"></i>كل النتائج</a>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-right ms-2"></i>رجوع</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">اكتب كود الطالب</label>
+                <div class="input-group">
+                    <input type="text" id="studentCodeInput" class="form-control" placeholder="ادخل كود الطالب..." autofocus />
+                    <button type="button" class="btn btn-primary" onclick="searchStudent()"><i class="fas fa-search"></i> بحث</button>
+                </div>
+                <small class="text-muted">ادخل كود الطالب واضغط Enter</small>
+            </div>
+            <div class="col-md-6 text-start">
+                <a asp-action="Results" asp-route-id="@ViewBag.ExamId" class="btn btn-outline-info">
+                    <i class="fas fa-users ms-2"></i>عرض كل الطلاب
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="resultArea"></div>
+
+<!-- Student Grade Modal -->
+<div class="modal fade" id="gradeModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تسجيل درجة الطالب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="gradeModalBody">
+                <div class="text-center py-4 text-muted" id="modalLoading">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                    <p>جاري البحث...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var examId = @ViewBag.ExamId;
+    var maxMarks = @ViewBag.MaxMarks;
+    var passMarks = @ViewBag.PassMarks;
+
+    var codeInput = document.getElementById('studentCodeInput');
+    if (codeInput) {
+        codeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); searchStudent(); }
+        });
+    }
+
+    function searchStudent() {
+        var code = document.getElementById('studentCodeInput').value.trim();
+        if (!code) return;
+
+        var modal = new bootstrap.Modal(document.getElementById('gradeModal'));
+        document.getElementById('gradeModalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري البحث...</p></div>';
+        modal.show();
+
+        fetch('/Exams/GetStudentForGrade?examId=' + examId + '&code=' + encodeURIComponent(code))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    document.getElementById('gradeModalBody').innerHTML =
+                        '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle fa-2x mb-2"></i><p>' + data.error + '</p></div>' +
+                        '<div class="text-center"><button class="btn btn-secondary" data-bs-dismiss="modal">حسناً</button></div>';
+                    return;
+                }
+                renderGradeForm(data);
+            })
+            .catch(function() {
+                document.getElementById('gradeModalBody').innerHTML =
+                    '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><p>حدث خطأ في الاتصال</p></div>' +
+                    '<div class="text-center"><button class="btn btn-secondary" data-bs-dismiss="modal">حسناً</button></div>';
+            });
+    }
+
+    function renderGradeForm(data) {
+        var studentId = data.studentId;
+        var marks = data.marksObtained;
+        var statusText = data.hasExisting
+            ? (marks >= passMarks
+                ? '<span class="badge bg-success">ناجح</span>'
+                : '<span class="badge bg-danger">راسب</span>')
+            : '<span class="badge bg-secondary">لم يسجل بعد</span>';
+
+        document.getElementById('gradeModalBody').innerHTML =
+            '<div class="text-center mb-3">' +
+                '<h4 class="fw-bold mb-1">' + data.fullName + '</h4>' +
+                '<span class="badge bg-azure-lt">' + data.studentCode + '</span>' +
+                ' ' + statusText +
+            '</div>' +
+            '<div class="mb-3">' +
+                '<label class="form-label fw-bold">الدرجة (من ' + maxMarks + ')</label>' +
+                '<input type="number" id="marksInput" class="form-control form-control-lg text-center" value="' + marks + '" min="0" max="' + maxMarks + '" autofocus />' +
+            '</div>' +
+            '<div class="mb-3">' +
+                '<label class="form-label">ملاحظات</label>' +
+                '<textarea id="notesInput" class="form-control" rows="2"></textarea>' +
+            '</div>' +
+            '<div class="d-flex gap-2 justify-content-center">' +
+                '<button type="button" class="btn btn-primary btn-lg px-4" onclick="saveGrade(' + studentId + ')"><i class="fas fa-save ms-2"></i>حفظ</button>' +
+                '<button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="closeAndClear()">إلغاء</button>' +
+            '</div>';
+    }
+
+    function saveGrade(studentId) {
+        var marks = parseInt(document.getElementById('marksInput').value);
+        if (isNaN(marks) || marks < 0 || marks > maxMarks) {
+            alert('الدرجة يجب أن تكون بين 0 و ' + maxMarks);
+            return;
+        }
+
+        var btn = document.querySelector('#gradeModalBody .btn-primary');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm ms-2"></span> جاري الحفظ...';
+
+        fetch('/Exams/SaveStudentGrade', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: 'examId=' + examId + '&studentId=' + studentId + '&marksObtained=' + marks
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                alert(data.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save ms-2"></i>حفظ';
+                return;
+            }
+            if (data.success) {
+                document.getElementById('gradeModalBody').innerHTML =
+                    '<div class="text-center py-4 text-success"><i class="fas fa-check-circle fa-3x mb-2"></i><h5>' + data.message + '</h5><p class="text-muted">الحالة: ' + data.status + '</p></div>' +
+                    '<div class="d-flex gap-2 justify-content-center">' +
+                        '<button class="btn btn-primary" onclick="continueAdding()"><i class="fas fa-plus ms-2"></i>إضافة آخر</button>' +
+                        '<button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>' +
+                    '</div>';
+            }
+        })
+        .catch(function() {
+            alert('حدث خطأ في الحفظ');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save ms-2"></i>حفظ';
+        });
+    }
+
+    function continueAdding() {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('gradeModal'));
+        if (modal) modal.hide();
+        document.getElementById('studentCodeInput').value = '';
+        document.getElementById('studentCodeInput').focus();
+    }
+
+    function closeAndClear() {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('gradeModal'));
+        if (modal) modal.hide();
+        document.getElementById('studentCodeInput').value = '';
+        document.getElementById('studentCodeInput').focus();
+    }
+
+    if (codeInput) codeInput.focus();
+</script>
+}

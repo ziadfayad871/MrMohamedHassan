@@ -19,8 +19,9 @@
                         <td>@e.ResultsCount طالب</td>
                         <td><div class="d-flex align-items-center gap-2"><div class="progress flex-fill" style="height:8px;width:80px"><div class="progress-bar bg-success" style="width:@e.SuccessRate%"></div></div><span>@e.SuccessRate%</span></div></td>
                         <td>
-                            <a asp-action="Results" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary"><i class="fas fa-list"></i></a>
-                            <a asp-action="Ranking" asp-route-id="@e.Id" class="btn btn-sm btn-outline-info"><i class="fas fa-trophy"></i></a>
+                            <a asp-action="EnterGrades" asp-route-id="@e.Id" class="btn btn-sm btn-outline-success" title="إضافة الدرجات"><i class="fas fa-plus-circle"></i></a>
+                            <a asp-action="Results" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary" title="كل النتائج"><i class="fas fa-list"></i></a>
+                            <a asp-action="Ranking" asp-route-id="@e.Id" class="btn btn-sm btn-outline-info" title="الترتيب"><i class="fas fa-trophy"></i></a>
                             <form asp-action="Delete" asp-route-id="@e.Id" method="post" style="display:inline"><button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('هل أنت متأكد؟')"><i class="fas fa-trash"></i></button></form>
                         </td>
                     </tr>
