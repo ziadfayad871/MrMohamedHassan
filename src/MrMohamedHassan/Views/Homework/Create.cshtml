@@ -9,7 +9,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
                         <div class="col-md-6 mb-3"><label asp-for="GroupId" class="form-label"></label><select asp-for="GroupId" asp-items="@(new SelectList((IEnumerable<dynamic>)ViewBag.Groups, "Id", "Name"))" class="form-select"><option value="">-- اختر المجموعة --</option></select></div>
-                        <div class="col-md-6 mb-3"><label asp-for="DueDate" class="form-label"></label><input asp-for="DueDate" type="date" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="DueDate" class="form-label"></label><input asp-for="DueDate" type="date" class="form-control" lang="en" /></div>
                         <div class="col-md-6 mb-3"><label asp-for="MaxMarks" class="form-label"></label><input asp-for="MaxMarks" type="number" class="form-control" /></div>
                         <div class="col-12 mb-3"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="3"></textarea></div>
                         <div class="col-12 mb-3"><label asp-for="Attachment" class="form-label">ملف مرفق</label><input asp-for="Attachment" type="file" class="form-control" /></div>

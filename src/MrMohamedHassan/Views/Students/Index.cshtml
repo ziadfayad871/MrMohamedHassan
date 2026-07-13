@@ -49,7 +49,7 @@
                     <th>المرحلة</th>
                     <th>الحالة</th>
                     <th>تاريخ الالتحاق</th>
-                    <th class="w-1"></th>
+                    <th class="w-1">الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,21 +95,27 @@
                         </td>
                         <td>@student.JoinDate.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <div class="dropdown">
-                                <button class="btn btn-ghost-secondary btn-icon btn-sm" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v"></i>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-ghost-info btn-icon btn-sm" onclick="viewStudent(@student.Id)" title="عرض">
+                                    <i class="fas fa-eye"></i>
                                 </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" asp-action="Details" asp-route-id="@student.Id"><i class="fas fa-eye ms-2"></i>عرض</a>
-                                    <a class="dropdown-item" asp-action="Edit" asp-route-id="@student.Id"><i class="fas fa-edit ms-2"></i>تعديل</a>
-                                    <a class="dropdown-item" asp-action="QrCode" asp-route-id="@student.Id"><i class="fas fa-qrcode ms-2"></i>QR Code</a>
-                                    <a class="dropdown-item" asp-action="PaymentHistory" asp-route-id="@student.Id"><i class="fas fa-money ms-2"></i>المدفوعات</a>
-                                    <a class="dropdown-item" asp-action="AttendanceHistory" asp-route-id="@student.Id"><i class="fas fa-clipboard ms-2"></i>الحضور</a>
-                                    <hr class="dropdown-divider" />
-                                    <form asp-action="Delete" asp-route-id="@student.Id" method="post">
-                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')"><i class="fas fa-trash ms-2"></i>حذف</button>
-                                    </form>
-                                </div>
+                                <button type="button" class="btn btn-ghost-primary btn-icon btn-sm" onclick="editStudent(@student.Id)" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm" onclick="showQr(@student.Id)" title="QR Code">
+                                    <i class="fas fa-qrcode"></i>
+                                </button>
+                                <a asp-action="PaymentHistory" asp-route-id="@student.Id" class="btn btn-ghost-success btn-icon btn-sm" title="المدفوعات">
+                                    <i class="fas fa-money-bill"></i>
+                                </a>
+                                <a asp-action="AttendanceHistory" asp-route-id="@student.Id" class="btn btn-ghost-warning btn-icon btn-sm" title="الحضور">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@student.Id" method="post" style="display:inline" onsubmit="return confirmDelete(event, this, '@student.FullName')">
+                                    <button type="submit" class="btn btn-ghost-danger btn-icon btn-sm" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -131,4 +137,339 @@
             }
         </ul>
     </nav>
+}
+
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">بيانات الطالب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري التحميل...</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل بيانات الطالب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" id="edit_Id" name="Id" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" id="edit_FullName" name="FullName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الهاتف</label>
+                            <input type="text" id="edit_Phone" name="Phone" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ولي الأمر</label>
+                            <input type="text" id="edit_ParentName" name="ParentName" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">هاتف ولي الأمر</label>
+                            <input type="text" id="edit_ParentPhone" name="ParentPhone" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">المدرسة</label>
+                            <input type="text" id="edit_School" name="School" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">المرحلة الدراسية</label>
+                            <input type="text" id="edit_Grade" name="Grade" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تاريخ الميلاد</label>
+                            <input type="date" id="edit_BirthDate" name="BirthDate" class="form-control" lang="en" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الجنس</label>
+                            <select id="edit_Gender" name="Gender" class="form-select">
+                                <option value="Male">ذكر</option>
+                                <option value="Female">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تاريخ الالتحاق</label>
+                            <input type="date" id="edit_JoinDate" name="JoinDate" class="form-control" lang="en" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">رسوم الاشتراك</label>
+                            <input type="number" id="edit_SubscriptionFee" name="SubscriptionFee" step="0.01" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select id="edit_Status" name="Status" class="form-select">
+                                <option value="Active">نشط</option>
+                                <option value="Inactive">غير نشط</option>
+                                <option value="Withdrawn">منسحب</option>
+                                <option value="Graduated">متخرج</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">العنوان</label>
+                            <textarea id="edit_Address" name="Address" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea id="edit_Notes" name="Notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save ms-2"></i>حفظ التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="qrModalBody">
+                <div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري التحميل...</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var antiForgeryToken = $('input[name="__RequestVerificationToken"]').val() || '';
+
+    function viewStudent(id) {
+        var modal = new bootstrap.Modal(document.getElementById('viewModal'));
+        document.getElementById('viewModalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري التحميل...</p></div>';
+        modal.show();
+
+        $.get('/Students/GetForEdit?id=' + id)
+            .done(function(data) {
+                if (data.error) {
+                    document.getElementById('viewModalBody').innerHTML = '<div class="text-center py-4 text-danger"><p>' + data.error + '</p></div>';
+                    return;
+                }
+                var statusClass = data.status === 'Active' ? 'success' : data.status === 'Inactive' ? 'warning' : 'danger';
+                var statusText = data.status === 'Active' ? 'نشط' : data.status === 'Inactive' ? 'غير نشط' : data.status === 'Withdrawn' ? 'منسحب' : 'متخرج';
+                var genderText = data.gender === 'Male' ? 'ذكر' : 'أنثى';
+                var birthDate = data.birthDate ? data.birthDate : '—';
+                document.getElementById('viewModalBody').innerHTML =
+                    '<div class="text-center mb-3">' +
+                        '<h4 class="fw-bold mb-1">' + data.fullName + '</h4>' +
+                        '<span class="badge bg-azure-lt">' + data.studentCode + '</span>' +
+                        ' <span class="badge bg-' + statusClass + '-lt">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="row">' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">الهاتف:</span> <span class="fw-bold">' + (data.phone || '—') + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">ولي الأمر:</span> <span class="fw-bold">' + (data.parentName || '—') + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">هاتف ولي الأمر:</span> <span class="fw-bold">' + (data.parentPhone || '—') + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">المدرسة:</span> <span class="fw-bold">' + (data.school || '—') + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">المرحلة:</span> <span class="fw-bold">' + (data.grade || '—') + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">الجنس:</span> <span class="fw-bold">' + genderText + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">تاريخ الميلاد:</span> <span class="fw-bold">' + birthDate + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">تاريخ الالتحاق:</span> <span class="fw-bold">' + data.joinDate + '</span></div>' +
+                        '<div class="col-md-6 mb-2"><span class="text-muted">رسوم الاشتراك:</span> <span class="fw-bold">' + Number(data.subscriptionFee).toLocaleString('ar-EG') + ' ج.م</span></div>' +
+                        (data.address ? '<div class="col-12 mb-2"><span class="text-muted">العنوان:</span> <span class="fw-bold">' + data.address + '</span></div>' : '') +
+                        (data.notes ? '<div class="col-12 mb-2"><span class="text-muted">ملاحظات:</span> <span>' + data.notes + '</span></div>' : '') +
+                    '</div>';
+            })
+            .fail(function() {
+                document.getElementById('viewModalBody').innerHTML = '<div class="text-center py-4 text-danger"><p>حدث خطأ في تحميل البيانات</p></div>';
+            });
+    }
+
+    function editStudent(id) {
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        // Reset form
+        document.getElementById('editForm').reset();
+        document.getElementById('editModal').querySelector('.modal-body').innerHTML =
+            '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري التحميل...</p></div>';
+        modal.show();
+
+        $.get('/Students/GetForEdit?id=' + id)
+            .done(function(data) {
+                if (data.error) {
+                    document.getElementById('editModal').querySelector('.modal-body').innerHTML =
+                        '<div class="text-center py-4 text-danger"><p>' + data.error + '</p></div>';
+                    return;
+                }
+                renderEditForm(data);
+            })
+            .fail(function() {
+                document.getElementById('editModal').querySelector('.modal-body').innerHTML =
+                    '<div class="text-center py-4 text-danger"><p>حدث خطأ في تحميل البيانات</p></div>';
+            });
+    }
+
+    function renderEditForm(data) {
+        var html =
+            '<input type="hidden" id="edit_Id" name="Id" value="' + data.id + '" />' +
+            '<div class="row">' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">الاسم الكامل</label>' +
+                    '<input type="text" id="edit_FullName" name="FullName" class="form-control" value="' + escHtml(data.fullName) + '" required />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">الهاتف</label>' +
+                    '<input type="text" id="edit_Phone" name="Phone" class="form-control" value="' + escHtml(data.phone || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">ولي الأمر</label>' +
+                    '<input type="text" id="edit_ParentName" name="ParentName" class="form-control" value="' + escHtml(data.parentName || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">هاتف ولي الأمر</label>' +
+                    '<input type="text" id="edit_ParentPhone" name="ParentPhone" class="form-control" value="' + escHtml(data.parentPhone || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">المدرسة</label>' +
+                    '<input type="text" id="edit_School" name="School" class="form-control" value="' + escHtml(data.school || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">المرحلة الدراسية</label>' +
+                    '<input type="text" id="edit_Grade" name="Grade" class="form-control" value="' + escHtml(data.grade || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">تاريخ الميلاد</label>' +
+                    '<input type="date" id="edit_BirthDate" name="BirthDate" class="form-control" lang="en" value="' + (data.birthDate || '') + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">الجنس</label>' +
+                    '<select id="edit_Gender" name="Gender" class="form-select">' +
+                        '<option value="Male"' + (data.gender === 'Male' ? ' selected' : '') + '>ذكر</option>' +
+                        '<option value="Female"' + (data.gender === 'Female' ? ' selected' : '') + '>أنثى</option>' +
+                    '</select>' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">تاريخ الالتحاق</label>' +
+                    '<input type="date" id="edit_JoinDate" name="JoinDate" class="form-control" lang="en" value="' + data.joinDate + '" required />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">رسوم الاشتراك</label>' +
+                    '<input type="number" id="edit_SubscriptionFee" name="SubscriptionFee" step="0.01" class="form-control" value="' + data.subscriptionFee + '" />' +
+                '</div>' +
+                '<div class="col-md-6 mb-3">' +
+                    '<label class="form-label">الحالة</label>' +
+                    '<select id="edit_Status" name="Status" class="form-select">' +
+                        '<option value="Active"' + (data.status === 'Active' ? ' selected' : '') + '>نشط</option>' +
+                        '<option value="Inactive"' + (data.status === 'Inactive' ? ' selected' : '') + '>غير نشط</option>' +
+                        '<option value="Withdrawn"' + (data.status === 'Withdrawn' ? ' selected' : '') + '>منسحب</option>' +
+                        '<option value="Graduated"' + (data.status === 'Graduated' ? ' selected' : '') + '>متخرج</option>' +
+                    '</select>' +
+                '</div>' +
+                '<div class="col-12 mb-3">' +
+                    '<label class="form-label">العنوان</label>' +
+                    '<textarea id="edit_Address" name="Address" class="form-control" rows="2">' + escHtml(data.address || '') + '</textarea>' +
+                '</div>' +
+                '<div class="col-12 mb-3">' +
+                    '<label class="form-label">ملاحظات</label>' +
+                    '<textarea id="edit_Notes" name="Notes" class="form-control" rows="2">' + escHtml(data.notes || '') + '</textarea>' +
+                '</div>' +
+            '</div>';
+        document.getElementById('editModal').querySelector('.modal-body').innerHTML = html;
+    }
+
+    function escHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm ms-2"></span> جاري الحفظ...';
+
+        var data = {
+            Id: parseInt($('#edit_Id').val()),
+            FullName: $('#edit_FullName').val(),
+            Phone: $('#edit_Phone').val(),
+            ParentName: $('#edit_ParentName').val(),
+            ParentPhone: $('#edit_ParentPhone').val(),
+            School: $('#edit_School').val(),
+            Grade: $('#edit_Grade').val(),
+            Address: $('#edit_Address').val(),
+            BirthDate: $('#edit_BirthDate').val() || null,
+            Gender: $('#edit_Gender').val(),
+            JoinDate: $('#edit_JoinDate').val(),
+            SubscriptionFee: parseFloat($('#edit_SubscriptionFee').val()) || 0,
+            Notes: $('#edit_Notes').val(),
+            Status: $('#edit_Status').val()
+        };
+
+        $.ajax({
+            url: '/Students/SaveEdit',
+            method: 'POST',
+            contentType: 'application/json',
+            headers: { 'RequestVerificationToken': antiForgeryToken },
+            data: JSON.stringify(data)
+        })
+        .done(function(result) {
+            if (result.error) {
+                alert(result.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save ms-2"></i>حفظ التعديلات';
+                return;
+            }
+            if (result.success) {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                if (modal) modal.hide();
+                location.reload();
+            }
+        })
+        .fail(function() {
+            alert('حدث خطأ في حفظ البيانات');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save ms-2"></i>حفظ التعديلات';
+        });
+    });
+
+    function showQr(id) {
+        var modal = new bootstrap.Modal(document.getElementById('qrModal'));
+        document.getElementById('qrModalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري التحميل...</p></div>';
+        modal.show();
+
+        $.get('/Students/QrCodeData?id=' + id)
+            .done(function(data) {
+                if (data.error) {
+                    document.getElementById('qrModalBody').innerHTML = '<div class="text-center py-4 text-danger"><p>' + data.error + '</p></div>';
+                    return;
+                }
+                document.getElementById('qrModalBody').innerHTML =
+                    '<div class="mb-3"><strong>' + data.studentName + '</strong><br/><span class="badge bg-azure-lt">' + data.studentCode + '</span></div>' +
+                    '<img src="' + data.qrCode + '" class="img-fluid" alt="QR Code" style="max-width:200px" />';
+            })
+            .fail(function() {
+                document.getElementById('qrModalBody').innerHTML = '<div class="text-center py-4 text-danger"><p>حدث خطأ</p></div>';
+            });
+    }
+
+    function confirmDelete(e, form, name) {
+        e.preventDefault();
+        if (confirm('هل أنت متأكد من حذف الطالب "' + name + '"؟')) {
+            form.submit();
+        }
+        return false;
+    }
+</script>
 }

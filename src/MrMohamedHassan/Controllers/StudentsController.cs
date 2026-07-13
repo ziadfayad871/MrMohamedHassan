@@ -156,6 +156,62 @@ public class StudentsController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetForEdit(int id)
+    {
+        var student = await _studentService.GetStudentWithDetailsAsync(id);
+        if (student == null) return Json(new { error = "الطالب غير موجود" });
+
+        return Json(new
+        {
+            student.Id,
+            student.StudentCode,
+            student.FullName,
+            student.Phone,
+            student.ParentName,
+            student.ParentPhone,
+            student.School,
+            student.Grade,
+            student.Address,
+            BirthDate = student.BirthDate?.ToString("yyyy-MM-dd"),
+            Gender = student.Gender.ToString(),
+            JoinDate = student.JoinDate.ToString("yyyy-MM-dd"),
+            student.SubscriptionFee,
+            student.Notes,
+            Status = student.Status.ToString(),
+            student.ImageUrl
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveEdit([FromBody] StudentEditViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return Json(new { error = "البيانات غير صالحة" });
+
+        var student = await _studentService.GetByIdAsync(model.Id);
+        if (student == null) return Json(new { error = "الطالب غير موجود" });
+
+        student.FullName = model.FullName;
+        student.Phone = model.Phone;
+        student.ParentName = model.ParentName;
+        student.ParentPhone = model.ParentPhone;
+        student.School = model.School;
+        student.Grade = model.Grade;
+        student.Address = model.Address;
+        student.BirthDate = model.BirthDate;
+        student.Gender = model.Gender;
+        student.JoinDate = model.JoinDate;
+        student.SubscriptionFee = model.SubscriptionFee;
+        student.Notes = model.Notes;
+        student.Status = model.Status;
+
+        await _studentService.UpdateAsync(student);
+
+        return Json(new { success = true, message = "تم تحديث بيانات الطالب بنجاح" });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(StudentEditViewModel model)
@@ -251,6 +307,18 @@ public class StudentsController : Controller
         ViewBag.Student = student;
         ViewBag.QrCode = qrBase64;
         return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> QrCodeData(int id)
+    {
+        var student = await _studentService.GetByIdAsync(id);
+        if (student == null) return Json(new { error = "الطالب غير موجود" });
+
+        var qrData = $"STUDENT:{student.Id}:{student.StudentCode}:{student.FullName}";
+        var qrBase64 = _qrCodeService.GetQrCodeAsBase64(qrData);
+
+        return Json(new { qrCode = $"data:image/png;base64,{qrBase64}", studentName = student.FullName, studentCode = student.StudentCode });
     }
 
     public async Task<IActionResult> PaymentHistory(int id)
