@@ -120,18 +120,26 @@
     var currentGroupId = @Model.GroupId;
     var currentDate = '@ViewBag.SelectedDate?.ToString("yyyy-MM-dd")';
 
-    document.getElementById('studentCodeInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); searchStudent(); }
-    });
+    var codeInput = document.getElementById('studentCodeInput');
+    if (codeInput) {
+        codeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); searchStudent(); }
+        });
+    }
 
     function searchStudent() {
         var code = document.getElementById('studentCodeInput').value.trim();
         if (!code) return;
         if (!currentGroupId) { alert('اختر المجموعة أولاً'); return; }
 
-        var modal = new bootstrap.Modal(document.getElementById('studentModal'));
-        document.getElementById('modalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري البحث...</p></div>';
-        modal.show();
+        try {
+            var modal = new bootstrap.Modal(document.getElementById('studentModal'));
+            document.getElementById('modalBody').innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>جاري البحث...</p></div>';
+            modal.show();
+        } catch(e) {
+            alert('حدث خطأ في فتح نافذة البحث: ' + e.message);
+            return;
+        }
 
         fetch('/Attendance/GetStudentInfo?code=' + encodeURIComponent(code) + '&groupId=' + currentGroupId)
             .then(function(r) { return r.json(); })
@@ -204,9 +212,7 @@
                 updateTableRow(studentId, status);
                 document.getElementById('studentCodeInput').value = '';
                 document.getElementById('studentCodeInput').focus();
-                // Update modal buttons
                 btns.forEach(function(b) { b.className = b.className.replace('btn-', 'btn-outline-'); });
-                var targetBtn = event && event.target ? event.target : null;
                 closeAndClear();
             }
         })
@@ -248,7 +254,6 @@
         document.getElementById('absenteesForm').submit();
     }
 
-    // Auto focus
-    document.getElementById('studentCodeInput').focus();
+    if (codeInput) codeInput.focus();
 </script>
 }
