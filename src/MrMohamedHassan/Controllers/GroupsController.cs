@@ -74,8 +74,7 @@ public class GroupsController : Controller
             StartTime = model.StartTime,
             EndTime = model.EndTime,
             Fee = model.Fee,
-            TeacherId = model.TeacherId,
-            AcademicYear = model.AcademicYear
+            TeacherId = model.TeacherId
         };
 
         await _groupService.CreateAsync(group);

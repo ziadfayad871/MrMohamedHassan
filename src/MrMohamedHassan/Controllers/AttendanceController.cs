@@ -32,7 +32,14 @@ public class AttendanceController : Controller
     public async Task<IActionResult> TakeAttendance(int? groupId, DateTime? date)
     {
         var selectedDate = date ?? DateTime.Today;
-        ViewBag.Groups = await _groupService.GetActiveGroupsAsync();
+        var dayNames = new[] { "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت" };
+        var dayName = dayNames[(int)selectedDate.DayOfWeek];
+        var allGroups = await _groupService.GetActiveGroupsAsync();
+        var filtered = allGroups.Where(g =>
+            string.IsNullOrEmpty(g.ScheduleDays) ||
+            g.ScheduleDays.Split(',').Select(d => d.Trim()).Contains(dayName)
+        ).ToList();
+        ViewBag.Groups = filtered;
         ViewBag.SelectedDate = selectedDate;
 
         if (groupId == null)

@@ -37,6 +37,11 @@ public class GroupCreateViewModel
     [Display(Name = "الأيام")]
     public string? ScheduleDays { get; set; }
 
+    public List<string> SelectedDays { get; set; } = new();
+
+    [Display(Name = "عدد الأيام")]
+    public int DaysPerWeek { get; set; } = 2;
+
     [Display(Name = "وقت البداية")]
     [DataType(DataType.Time)]
     public TimeSpan? StartTime { get; set; }
@@ -51,9 +56,6 @@ public class GroupCreateViewModel
     [Required(ErrorMessage = "يجب اختيار المعلم")]
     [Display(Name = "المعلم")]
     public int TeacherId { get; set; }
-
-    [Display(Name = "السنة الدراسية")]
-    public string? AcademicYear { get; set; }
 
     public List<int> SelectedStudentIds { get; set; } = new();
 }
@@ -79,6 +81,11 @@ public class GroupEditViewModel
 
     [Display(Name = "الأيام")]
     public string? ScheduleDays { get; set; }
+
+    public List<string> SelectedDays { get; set; } = new();
+
+    [Display(Name = "عدد الأيام")]
+    public int DaysPerWeek { get; set; }
 
     [DataType(DataType.Time)]
     public TimeSpan? StartTime { get; set; }

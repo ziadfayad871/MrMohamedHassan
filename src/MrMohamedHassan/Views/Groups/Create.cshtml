@@ -1,11 +1,12 @@
 @model MrMohamedHassan.ViewModels.GroupCreateViewModel
 @{
     ViewData["Title"] = "إنشاء مجموعة جديدة";
+    var days = new[] { "السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة" };
 }
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card border-0 shadow-sm">
+        <div class="card">
             <div class="card-header">
                 <h3 class="card-title">إنشاء مجموعة جديدة</h3>
             </div>
@@ -22,17 +23,30 @@
                             <label asp-for="Capacity" class="form-label"></label>
                             <input asp-for="Capacity" class="form-control" type="number" />
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Fee" class="form-label"></label>
-                            <input asp-for="Fee" class="form-control" type="number" step="0.01" />
+                        <div class="col-12 mb-3">
+                            <label class="form-label">أيام الانعقاد</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var day in days)
+                                {
+                                    <label class="form-check" style="cursor:pointer;">
+                                        <input type="checkbox" name="SelectedDays" value="@day" class="form-check-input day-checkbox" />
+                                        <span class="form-check-label">@day</span>
+                                    </label>
+                                }
+                            </div>
+                            <input type="hidden" asp-for="ScheduleDays" />
+                            <small class="text-muted">اختر الأيام اللي هتنعقد فيها المجموعة</small>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Grade" class="form-label"></label>
-                            <input asp-for="Grade" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="ScheduleDays" class="form-label"></label>
-                            <input asp-for="ScheduleDays" class="form-control" placeholder="مثال: السبت والاثنين والأربعاء" />
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DaysPerWeek" class="form-label"></label>
+                            <select asp-for="DaysPerWeek" class="form-select">
+                                <option value="1">يوم واحد</option>
+                                <option value="2" selected>يومين</option>
+                                <option value="3">ثلاثة أيام</option>
+                                <option value="4">أربعة أيام</option>
+                                <option value="5">خمسة أيام</option>
+                                <option value="6">ستة أيام</option>
+                            </select>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label asp-for="StartTime" class="form-label"></label>
@@ -42,9 +56,13 @@
                             <label asp-for="EndTime" class="form-label"></label>
                             <input asp-for="EndTime" class="form-control" type="time" />
                         </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Fee" class="form-label"></label>
+                            <input asp-for="Fee" class="form-control" type="number" step="0.01" />
+                        </div>
                         <div class="col-md-6 mb-3">
-                            <label asp-for="AcademicYear" class="form-label"></label>
-                            <input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" />
+                            <label asp-for="Grade" class="form-label"></label>
+                            <input asp-for="Grade" class="form-control" />
                         </div>
                     </div>
                     <div class="d-flex gap-2">
@@ -56,3 +74,15 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    document.querySelector('form').addEventListener('submit', function() {
+        var checked = [];
+        document.querySelectorAll('.day-checkbox:checked').forEach(function(cb) {
+            checked.push(cb.value);
+        });
+        document.getElementById('@Html.IdFor(m => m.ScheduleDays)').value = checked.join(',');
+    });
+</script>
+}
