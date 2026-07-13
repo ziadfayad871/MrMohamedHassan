@@ -5,8 +5,9 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>@Model.FullName</h2>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="fas fa-edit ms-2"></i>تعديل</a>
+        <a asp-action="PerformanceAnalysis" asp-route-id="@Model.Id" class="btn btn-info text-white"><i class="fas fa-chart-line ms-2"></i>تحليل الأداء</a>
         <a asp-action="QrCode" asp-route-id="@Model.Id" class="btn btn-outline-primary"><i class="fas fa-qrcode ms-2"></i>QR Code</a>
         <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-right ms-2"></i>رجوع</a>
     </div>

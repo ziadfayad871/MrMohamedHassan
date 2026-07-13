@@ -175,3 +175,15 @@ public class StudentSearchViewModel
     public StudentStatus? Status { get; set; }
     public int? GroupId { get; set; }
 }
+
+public class StudentExamPerformanceViewModel
+{
+    public string ExamTitle { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public DateTime ExamDate { get; set; }
+    public int MaxMarks { get; set; }
+    public int PassMarks { get; set; }
+    public int? MarksObtained { get; set; }
+    public bool HasResult { get; set; }
+    public string Status { get; set; } = "لم يمتحن";
+}

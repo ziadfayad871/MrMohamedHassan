@@ -345,4 +345,44 @@ public class StudentsController : Controller
         ViewBag.Student = student;
         return View(attendance);
     }
+
+    public async Task<IActionResult> PerformanceAnalysis(int id)
+    {
+        var student = await _studentService.GetByIdAsync(id);
+        if (student == null) return NotFound();
+
+        var groupIds = await _context.StudentGroups
+            .Where(sg => sg.StudentId == id && sg.IsActive)
+            .Select(sg => sg.GroupId)
+            .ToListAsync();
+
+        var exams = await _context.Exams
+            .Include(e => e.Group)
+            .Include(e => e.Results)
+            .Where(e => groupIds.Contains(e.GroupId))
+            .OrderByDescending(e => e.ExamDate)
+            .ToListAsync();
+
+        var results = new List<StudentExamPerformanceViewModel>();
+        foreach (var exam in exams)
+        {
+            var result = exam.Results?.FirstOrDefault(r => r.StudentId == id);
+            results.Add(new StudentExamPerformanceViewModel
+            {
+                ExamTitle = exam.Title,
+                GroupName = exam.Group?.Name ?? "",
+                ExamDate = exam.ExamDate,
+                MaxMarks = exam.MaxMarks,
+                PassMarks = exam.PassMarks,
+                MarksObtained = result?.MarksObtained,
+                HasResult = result != null,
+                Status = result != null
+                    ? (result.MarksObtained >= exam.PassMarks ? "ناجح" : "راسب")
+                    : "لم يمتحن"
+            });
+        }
+
+        ViewBag.Student = student;
+        return View(results);
+    }
 }

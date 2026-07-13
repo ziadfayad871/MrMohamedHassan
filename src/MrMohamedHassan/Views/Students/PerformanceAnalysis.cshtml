@@ -1,0 +1,132 @@
+@model List<MrMohamedHassan.ViewModels.StudentExamPerformanceViewModel>
+@{
+    var student = ViewBag.Student;
+    ViewData["Title"] = $"تحليل الأداء - {student?.FullName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-chart-line ms-2 text-primary"></i>تحليل الأداء
+    </h2>
+    <div class="d-flex gap-2 align-items-center">
+        <strong>@student?.FullName</strong>
+        <span class="badge bg-azure-lt">@student?.StudentCode</span>
+        <a asp-action="Details" asp-route-id="@student?.Id" class="btn btn-outline-secondary"><i class="fas fa-arrow-right ms-2"></i>رجوع</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-file-alt text-muted mb-3" style="font-size:3rem"></i>
+            <h5 class="text-muted">لا توجد امتحانات مسجلة لهذا الطالب</h5>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>الامتحان</th>
+                        <th>المجموعة</th>
+                        <th>التاريخ</th>
+                        <th>الدرجة</th>
+                        <th>الدرجة النهائية</th>
+                        <th>النسبة</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exam in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@exam.ExamTitle</td>
+                            <td><span class="badge bg-primary-lt">@exam.GroupName</span></td>
+                            <td>@exam.ExamDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (exam.HasResult)
+                                {
+                                    <span class="fw-bold @(exam.MarksObtained >= exam.PassMarks ? "text-success" : "text-danger")">@exam.MarksObtained</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>@exam.MaxMarks</td>
+                            <td>
+                                @if (exam.HasResult)
+                                {
+                                    var pct = (double)exam.MarksObtained!.Value / exam.MaxMarks * 100;
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-fill" style="height:8px;max-width:100px">
+                                            <div class="progress-bar @(pct >= 50 ? "bg-success" : "bg-danger")" style="width:@(pct)%"></div>
+                                        </div>
+                                        <span class="small">@pct.ToString("0.0")%</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (exam.HasResult)
+                                {
+                                    if (exam.MarksObtained >= exam.PassMarks)
+                                    {
+                                        <span class="badge bg-success-lt">ناجح</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-lt">راسب</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-lt">لم يمتحن</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    var total = Model.Count;
+    var taken = Model.Count(e => e.HasResult);
+    var passed = Model.Count(e => e.HasResult && e.MarksObtained >= e.PassMarks);
+    var avgPct = taken > 0 ? Model.Where(e => e.HasResult).Average(e => (double)e.MarksObtained!.Value / e.MaxMarks * 100) : 0;
+
+    <div class="row mt-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="stat-value text-primary">@total</div>
+                <div class="stat-label">إجمالي الامتحانات</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="stat-value text-info">@taken</div>
+                <div class="stat-label">امتحانات تم أداؤها</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="stat-value text-success">@passed</div>
+                <div class="stat-label">ناجح</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="stat-value @(avgPct >= 50 ? "text-success" : "text-danger")">@avgPct.ToString("0.0")%</div>
+                <div class="stat-label">متوسط النسبة</div>
+            </div>
+        </div>
+    </div>
+}
