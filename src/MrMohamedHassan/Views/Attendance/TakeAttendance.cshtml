@@ -99,7 +99,16 @@
             <div class="modal-body">
                 <div id="qrReader" style="width:100%;min-height:250px"></div>
                 <p class="text-muted text-center small mt-2">وجه الكاميرا نحو QR Code الخاص بالطالب</p>
-                <div class="text-center">
+                <div class="text-center mt-2 mb-2">
+                    <label class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-image ms-1"></i>اختر صورة QR
+                        <input type="file" id="qrFileInput" accept="image/*" style="display:none" onchange="scanQrFile(event)" />
+                    </label>
+                </div>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="switchCamera()" id="switchCamBtn" style="display:none">
+                        <i class="fas fa-sync ms-1"></i>تبديل الكاميرا
+                    </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="stopScanner()" data-bs-dismiss="modal">
                         <i class="fas fa-times ms-1"></i>إلغاء
                     </button>
@@ -278,6 +287,8 @@
     }
 
     var html5QrCode = null;
+    var currentCameraId = null;
+    var availableCameras = [];
 
     function startScanner() {
         if (!currentGroupId) { alert('اختر المجموعة أولاً'); return; }
@@ -285,31 +296,65 @@
         var modal = new bootstrap.Modal(document.getElementById('qrScannerModal'));
         modal.show();
 
-        setTimeout(function() {
-            if (typeof Html5Qrcode === 'undefined') {
-                document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>مكتبة المسح لم يتم تحميلها بعد، حاول مرة أخرى</p></div>';
+        if (typeof Html5Qrcode === 'undefined') {
+            document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>مكتبة المسح لم يتم تحميلها بعد، حاول مرة أخرى</p></div>';
+            return;
+        }
+
+        Html5Qrcode.getCameras().then(function(cameras) {
+            availableCameras = cameras;
+            if (!cameras || cameras.length === 0) {
+                document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>لا توجد كاميرات متاحة</p></div>';
                 return;
             }
 
-            html5QrCode = new Html5Qrcode("qrReader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                function(qrData) {
-                    stopScanner();
-                    var code = parseQrCode(qrData);
-                    if (code) {
-                        document.getElementById('studentCodeInput').value = code;
-                        searchStudent();
-                    } else {
-                        alert('QR Code غير صالح');
-                    }
-                },
-                function() { }
-            ).catch(function(err) {
-                document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>تعذر الوصول للكاميرا<br/><small>تأكد من السماح بالوصول للكاميرا</small></p></div>';
+            // Find back camera
+            var backCam = cameras.find(function(c) {
+                return c.label && (c.label.toLowerCase().indexOf('back') !== -1 ||
+                    c.label.toLowerCase().indexOf('rear') !== -1 ||
+                    c.label.toLowerCase().indexOf('environment') !== -1 ||
+                    c.label.toLowerCase().indexOf('خلفية') !== -1);
             });
-        }, 500);
+
+            currentCameraId = backCam ? backCam.id : cameras[0].id;
+            if (cameras.length > 1) document.getElementById('switchCamBtn').style.display = 'inline-block';
+            startQrReader(currentCameraId);
+        }).catch(function() {
+            // Fallback: try facingMode
+            currentCameraId = { facingMode: "environment" };
+            startQrReader(currentCameraId);
+        });
+    }
+
+    function startQrReader(cameraId) {
+        document.getElementById('qrReader').innerHTML = '';
+        html5QrCode = new Html5Qrcode("qrReader");
+        html5QrCode.start(
+            cameraId,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            function(qrData) {
+                stopScanner();
+                var code = parseQrCode(qrData);
+                if (code) {
+                    document.getElementById('studentCodeInput').value = code;
+                    searchStudent();
+                } else {
+                    alert('QR Code غير صالح');
+                }
+            },
+            function() { }
+        ).catch(function(err) {
+            // If first camera fails, try the other one
+            if (availableCameras.length > 1) {
+                var otherCam = availableCameras.find(function(c) { return c.id !== cameraId; });
+                if (otherCam) {
+                    currentCameraId = otherCam.id;
+                    startQrReader(otherCam.id);
+                    return;
+                }
+            }
+            document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>تعذر الوصول للكاميرا<br/><small>تأكد من السماح بالوصول للكاميرا</small></p></div>';
+        });
     }
 
     function parseQrCode(qrData) {
@@ -318,6 +363,15 @@
             return parts[2];
         }
         return null;
+    }
+
+    function switchCamera() {
+        if (availableCameras.length < 2) return;
+        stopScanner();
+        var currentIdx = availableCameras.findIndex(function(c) { return c.id === currentCameraId; });
+        var nextIdx = (currentIdx + 1) % availableCameras.length;
+        currentCameraId = availableCameras[nextIdx].id;
+        startQrReader(currentCameraId);
     }
 
     function stopScanner() {
