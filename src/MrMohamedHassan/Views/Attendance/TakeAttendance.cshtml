@@ -40,8 +40,9 @@
                     <div class="input-group">
                         <input type="text" id="studentCodeInput" class="form-control" placeholder="ادخل كود الطالب..." autofocus />
                         <button type="button" class="btn btn-primary" onclick="searchStudent()"><i class="fas fa-search"></i> بحث</button>
+                        <button type="button" class="btn btn-success" onclick="startScanner()"><i class="fas fa-camera"></i> مسح</button>
                     </div>
-                    <small class="text-muted">ادخل كود الطالب واضغط Enter</small>
+                    <small class="text-muted">ادخل كود الطالب واضغط Enter، أو استخدم <strong>مسح</strong> لكاميرا الموبايل</small>
                 </div>
                 <div class="col-md-6 text-start">
                     <button type="button" class="btn btn-warning" onclick="recordAbsentees()">
@@ -87,6 +88,27 @@
     </div>
 }
 
+<!-- QR Scanner Modal -->
+<div class="modal fade" id="qrScannerModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-camera ms-2"></i>مسح QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="stopScanner()"></button>
+            </div>
+            <div class="modal-body">
+                <div id="qrReader" style="width:100%;min-height:250px"></div>
+                <p class="text-muted text-center small mt-2">وجه الكاميرا نحو QR Code الخاص بالطالب</p>
+                <div class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="stopScanner()" data-bs-dismiss="modal">
+                        <i class="fas fa-times ms-1"></i>إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Student Modal -->
 <div class="modal fade" id="studentModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
@@ -116,6 +138,7 @@
 </form>
 
 @section Scripts {
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script>
     var currentGroupId = @Model.GroupId;
     var currentDate = '@ViewBag.SelectedDate?.ToString("yyyy-MM-dd")';
@@ -252,6 +275,57 @@
     function recordAbsentees() {
         if (!confirm('هل تريد تسجيل غياب للطلاب الباقين (اللي مدخلتش كوداتهم)؟')) return;
         document.getElementById('absenteesForm').submit();
+    }
+
+    var html5QrCode = null;
+
+    function startScanner() {
+        if (!currentGroupId) { alert('اختر المجموعة أولاً'); return; }
+
+        var modal = new bootstrap.Modal(document.getElementById('qrScannerModal'));
+        modal.show();
+
+        setTimeout(function() {
+            if (typeof Html5Qrcode === 'undefined') {
+                document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>مكتبة المسح لم يتم تحميلها بعد، حاول مرة أخرى</p></div>';
+                return;
+            }
+
+            html5QrCode = new Html5Qrcode("qrReader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                function(qrData) {
+                    stopScanner();
+                    var code = parseQrCode(qrData);
+                    if (code) {
+                        document.getElementById('studentCodeInput').value = code;
+                        searchStudent();
+                    } else {
+                        alert('QR Code غير صالح');
+                    }
+                },
+                function() { }
+            ).catch(function(err) {
+                document.getElementById('qrReader').innerHTML = '<div class="text-center py-4 text-danger"><p>تعذر الوصول للكاميرا<br/><small>تأكد من السماح بالوصول للكاميرا</small></p></div>';
+            });
+        }, 500);
+    }
+
+    function parseQrCode(qrData) {
+        var parts = qrData.split(':');
+        if (parts.length >= 3 && parts[0] === 'STUDENT') {
+            return parts[2];
+        }
+        return null;
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            try { html5QrCode.stop(); } catch(e) {}
+            try { html5QrCode.clear(); } catch(e) {}
+            html5QrCode = null;
+        }
     }
 
     if (codeInput) codeInput.focus();
